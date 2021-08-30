@@ -1,0 +1,119 @@
+####################################################
+#                                                  #
+#  This file is used for testing                   #
+#  Used by REST Client extensions in VSCode        #
+#                                                  # 
+####################################################
+
+
+@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzAzNTEwOTEsImlzcyI6Imx1dXRoYW5oZGF0In0.nqvwfSOW9P52ba_Y4-NxlHYXT2WJstqv0-G-HUfNksQ
+
+@base_url = http://127.0.0.1:8080
+
+########################
+#    1. User Module    #
+########################
+
+
+### User Register
+POST {{base_url}}/api/user HTTP/1.1
+content-type: application/json
+
+{
+    "username": "luuthanhdat",
+    "email": "datluu.1702@gmail.com",
+    "password": "dat123!@#",
+    "age": 19,
+    "Gender": 0
+}
+
+
+### User Login
+POST {{base_url}}/login HTTP/1.1
+content-type: application/json
+
+{   
+    "username": "luuthanhdat",
+    "password": "dat123!@#"
+}
+
+
+### User GetAll
+GET {{base_url}}/api/user HTTP/1.1
+content-type: application/json
+token: {{access_token}}
+
+
+### User GetOne
+GET {{base_url}}/api/user/1 HTTP/1.1
+content-type: application/json
+token: {{access_token}}
+
+
+### User Delete
+DELETE {{base_url}}/api/user/5 HTTP/1.1
+content-type: application/json
+token: {{access_token}}
+
+
+### User Update
+PUT {{base_url}}/api/user/3 HTTP/1.1
+content-type: application/json
+token: {{access_token}}
+
+{
+    "age": 20
+}
+
+
+### User Auth
+Get {{base_url}}/api/user/checkauth HTTP/1.1
+content-type: application/json
+Authorization: {{access_token}}
+
+
+
+########################
+#    2. Todo Module    #
+########################
+
+
+### Todo Add
+POST {{base_url}}/api/todo HTTP/1.1
+content-type: application/json
+token: {{access_token}}
+
+{
+    "name": "task 1",
+    "description": "description of task 1",
+    "user_id": 1,
+    "status": "Active"
+}
+
+
+### Todo GetAll
+GET {{base_url}}/api/todo HTTP/1.1
+content-type: application/json
+token: {{access_token}}
+
+
+### Todo GetOne
+GET {{base_url}}/api/todo/1 HTTP/1.1
+content-type: application/json
+token: {{access_token}}
+
+
+### Todo Update
+PUT {{base_url}}/api/todo/2 HTTP/1.1
+content-type: application/json
+token: {{access_token}}
+
+{
+    "name": "task 2"
+}
+
+
+### Todo Delete
+DELETE {{base_url}}/api/todo/1 HTTP/1.1
+content-type: application/json
+token: {{access_token}}
