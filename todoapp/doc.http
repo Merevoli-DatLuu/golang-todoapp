@@ -6,7 +6,7 @@
 ####################################################
 
 
-@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzAzNTEwOTEsImlzcyI6Imx1dXRoYW5oZGF0In0.nqvwfSOW9P52ba_Y4-NxlHYXT2WJstqv0-G-HUfNksQ
+@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzAzODY0ODcsImlzcyI6Imx1dXRoYW5oZGF0In0.LH8G_dFW94l2hqQIMJBR5U4KIpIVS1w8YsNk4pQGwWI
 
 @base_url = http://127.0.0.1:8080
 
@@ -104,12 +104,12 @@ token: {{access_token}}
 
 
 ### Todo Update
-PUT {{base_url}}/api/todo/2 HTTP/1.1
+PUT {{base_url}}/api/todo/1 HTTP/1.1
 content-type: application/json
 token: {{access_token}}
 
 {
-    "name": "task 2"
+    "name": "task 1"
 }
 
 

@@ -16,10 +16,10 @@ type EasyToken struct {
 
 var (
 	verifyKey  string
-	ErrAbsent  = "token absent"  // 令牌不存在
-	ErrInvalid = "token invalid" // 令牌无效
-	ErrExpired = "token expired" // 令牌过期
-	ErrOther   = "other error"   // 其他错误
+	ErrAbsent  = "token absent"
+	ErrInvalid = "token invalid"
+	ErrExpired = "token expired"
+	ErrOther   = "other error"
 )
 
 func init() {

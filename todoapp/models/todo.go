@@ -151,9 +151,8 @@ func UpdateTodoById(m *Todo, u *Todo) (err error) {
 	if m.CreatedDate == 0 {
 		m.CreatedDate = u.CreatedDate
 	}
-	if m.UpdateDate == 0 {
-		m.UpdateDate = u.UpdateDate
-	}
+
+	m.UpdateDate = time.Now().UTC().Unix()
 
 	if err = o.Read(&v); err == nil {
 		var num int64
