@@ -6,18 +6,18 @@
 ####################################################
 
 
-@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzA3NjU2NzAsImlzcyI6Imx1dXRoYW5oZGF0In0.g6ni3vUde6Tkj2JcRQ3mFD6ZMIR7-ybEFgs-ubBMw-Q
-
+@access_token = {{user_login.response.body.data.access_token}}
 @base_url = http://127.0.0.1:8080
-
 @api_url = {{base_url}}/api/v1
+
 
 ########################
 #    1. User Module    #
 ########################
 
 
-### User Register
+### User Register ###
+# @name user_register
 POST {{api_url}}/register HTTP/1.1
 content-type: application/json
 
@@ -30,7 +30,9 @@ content-type: application/json
 }
 
 
-### User Login
+
+### User Login ###
+# @name user_login
 POST {{api_url}}/login HTTP/1.1
 content-type: application/json
 
@@ -40,25 +42,33 @@ content-type: application/json
 }
 
 
-### User GetAll
+
+### User Get All ###
+# @name user_getall
 GET {{api_url}}/user HTTP/1.1
 content-type: application/json
 Authorization: Bearer {{access_token}}
 
 
-### User GetOne
+
+### User Get One ###
+# @name user_getone
 GET {{api_url}}/user/1 HTTP/1.1
 content-type: application/json
 Authorization: Bearer {{access_token}}
 
 
-### User Delete
+
+### User Delete ###
+# @name user_delete
 DELETE {{api_url}}/user/2 HTTP/1.1
 content-type: application/json
 Authorization: Bearer {{access_token}}
 
 
-### User Update
+
+### User Update ###
+# @name user_update
 PUT {{api_url}}/user/1 HTTP/1.1
 content-type: application/json
 Authorization: Bearer {{access_token}}
@@ -68,7 +78,9 @@ Authorization: Bearer {{access_token}}
 }
 
 
-### User Auth
+
+### User Check Auth ###
+# @name user_auth
 Get {{api_url}}/user/check_auth HTTP/1.1
 content-type: application/json
 Authorization: Bearer {{access_token}}
@@ -80,7 +92,8 @@ Authorization: Bearer {{access_token}}
 ########################
 
 
-### Todo Add
+### Todo Create ###
+# @name todo_create
 POST {{api_url}}/todo HTTP/1.1
 content-type: application/json
 Authorization: Bearer {{access_token}}
@@ -93,18 +106,25 @@ Authorization: Bearer {{access_token}}
 }
 
 
-### Todo GetAll
+
+### Todo Get All ###
+# @name todo_getall
 GET {{api_url}}/todo HTTP/1.1
 content-type: application/json
 Authorization: Bearer {{access_token}}
 
 
-### Todo GetOne
+
+### Todo Get One ###
+# @name todo_getone
 GET {{api_url}}/todo/2 HTTP/1.1
 content-type: application/json
 Authorization: Bearer {{access_token}}
 
-### Todo Update
+
+
+### Todo Update ###
+# @name todo_update
 PUT {{api_url}}/todo/2 HTTP/1.1
 content-type: application/json
 Authorization: Bearer {{access_token}}
@@ -114,7 +134,9 @@ Authorization: Bearer {{access_token}}
 }
 
 
-### Todo Delete
+
+### Todo Delete ###
+# @name todo_delete
 DELETE {{api_url}}/todo/1 HTTP/1.1
 content-type: application/json
 Authorization: Bearer {{access_token}}

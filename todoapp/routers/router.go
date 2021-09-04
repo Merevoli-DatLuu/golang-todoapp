@@ -40,16 +40,19 @@ var auth = func(ctx *context.Context) {
 
 	if len(token_fields) == 2 && token_fields[0] == "Bearer" {
 		token := token_fields[1]
+		println(token)
 		et := utils.EasyToken{}
 		validation, err := et.ValidateToken(token)
 
 		if !validation {
 			controllers.RetUnauthorizedResponse(ctx, err.Error())
+			return
 		}
 
 		found, _ := models.GetUserByToken(token)
 		if !found {
 			controllers.RetUnauthorizedResponse(ctx, "user is not exist")
+			return
 		}
 
 	} else {
