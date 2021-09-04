@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 	"todoapp/models"
@@ -25,56 +23,43 @@ func (c *TodoController) URLMapping() {
 func (c *TodoController) Post() {
 	var v models.Todo
 
-	token := c.Ctx.Input.Header("token")
-	et := utils.EasyToken{}
-	valido, err := et.ValidateToken(token)
-	if !valido {
-		c.Ctx.ResponseWriter.WriteHeader(401)
-		c.Data["json"] = Response{401, 401, fmt.Sprintf("%s", err), ""}
-		c.ServeJSON()
-		return
-	}
-
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if errorMessage := utils.CheckNewTodo(v.Name, v.Description, v.UserId, v.Status); errorMessage != "ok" {
-			c.Ctx.ResponseWriter.WriteHeader(403)
-			c.Data["json"] = Response{403, 403, errorMessage, ""}
-			c.ServeJSON()
+			c.RetResponse(&Response{FailStatus, 403, errorMessage, ""}, 403)
 			return
 		}
+
 		if !models.CheckUserId(v.UserId) {
-			c.Ctx.ResponseWriter.WriteHeader(403)
-			c.Data["json"] = Response{403, 403, "UserId is not exist", ""}
-			c.ServeJSON()
+			c.RetResponse(&Response{FailStatus, 403, "UserId is not exist", ""}, 403)
 			return
 		}
 
 		if todoId, err := models.AddTodo(&v); err == nil {
-			c.Ctx.Output.SetStatus(201)
 			var returnData = &CreateObjectData{int(todoId)}
-			c.Data["json"] = &Response{0, 0, "ok", returnData}
+			c.RetResponse(&Response{SuccessStatus, 0, "Create todo successfully", returnData}, 201)
+			return
 		} else {
-			c.Ctx.ResponseWriter.WriteHeader(403)
-			c.Data["json"] = err.Error()
-			c.ServeJSON()
+			c.RetResponse(&Response{FailStatus, 403, err.Error(), ""}, 403)
 			return
 		}
 	} else {
-		c.Data["json"] = err.Error()
+		c.RetResponse(&Response{FailStatus, 403, err.Error(), ""}, 403)
+		return
 	}
-	c.ServeJSON()
 }
 
 func (c *TodoController) GetOne() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.Atoi(idStr)
 	v, err := models.GetTodoById(id)
+
 	if err != nil {
-		c.Data["json"] = err.Error()
+		c.RetResponse(&Response{FailStatus, 404, err.Error(), ""}, 404)
+		return
 	} else {
-		c.Data["json"] = v
+		c.RetResponse(&Response{SuccessStatus, 200, "Get todo successfully", v}, 200)
+		return
 	}
-	c.ServeJSON()
 }
 
 func (c *TodoController) GetAll() {
@@ -84,24 +69,6 @@ func (c *TodoController) GetAll() {
 	var query = make(map[string]string)
 	var limit int = 20
 	var offset int
-
-	token := c.Ctx.Input.Header("token")
-	et := utils.EasyToken{}
-	validation, err := et.ValidateToken(token)
-	if !validation {
-		c.Ctx.ResponseWriter.WriteHeader(401)
-		c.Data["json"] = Response{401, 401, fmt.Sprintf("%s", err), ""}
-		c.ServeJSON()
-		return
-	}
-
-	found, _ := models.GetUserByToken(token)
-	if !found {
-		c.Ctx.Output.SetStatus(201)
-		c.Data["json"] = &Response{401, 401, "user is not exist", ""}
-		c.ServeJSON()
-		return
-	}
 
 	// fields: col1,col2,entity.col3
 	if v := c.GetString("fields"); v != "" {
@@ -128,8 +95,7 @@ func (c *TodoController) GetAll() {
 		for _, cond := range strings.Split(v, ",") {
 			kv := strings.SplitN(cond, ":", 2)
 			if len(kv) != 2 {
-				c.Data["json"] = errors.New("Error: invalid query key/value pair")
-				c.ServeJSON()
+				c.RetResponse(&Response{FailStatus, 400, "Error: invalid query key/value pair", ""}, 400)
 				return
 			}
 			k, v := kv[0], kv[1]
@@ -139,12 +105,12 @@ func (c *TodoController) GetAll() {
 
 	l, err := models.GetAllTodos(query, fields, sortby, order, offset, limit)
 	if err != nil {
-		c.Data["json"] = err.Error()
+		c.RetResponse(&Response{FailStatus, 400, err.Error(), ""}, 400)
+		return
 	} else {
-		var returnData = &GetTodoData{l}
-		c.Data["json"] = &Response{0, 0, "ok", returnData}
+		c.RetResponse(&Response{SuccessStatus, 0, "Get all todos successfully", l}, 200)
+		return
 	}
-	c.ServeJSON()
 }
 
 func (c *TodoController) Put() {
@@ -154,28 +120,32 @@ func (c *TodoController) Put() {
 
 	u, err := models.GetTodoById(id)
 	if err != nil {
-		c.Data["json"] = err.Error()
+		c.RetResponse(&Response{FailStatus, 404, err.Error(), ""}, 404)
+		return
 	}
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if err := models.UpdateTodoById(&v, u); err == nil {
-			c.Data["json"] = "OK"
+			c.RetResponse(&Response{SuccessStatus, 0, "Update todo successfully", ""}, 201)
+			return
 		} else {
-			c.Data["json"] = err.Error()
+			c.RetResponse(&Response{FailStatus, 400, err.Error(), ""}, 400)
+			return
 		}
 	} else {
-		c.Data["json"] = err.Error()
+		c.RetResponse(&Response{FailStatus, 400, err.Error(), ""}, 400)
+		return
 	}
-	c.ServeJSON()
 }
 
 func (c *TodoController) Delete() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.Atoi(idStr)
 	if err := models.DeleteTodo(id); err == nil {
-		c.Data["json"] = "OK"
+		c.RetResponse(&Response{SuccessStatus, 0, "Delete todo successfully", ""}, 200)
+		return
 	} else {
-		c.Data["json"] = err.Error()
+		c.RetResponse(&Response{FailStatus, 400, err.Error(), ""}, 400)
+		return
 	}
-	c.ServeJSON()
 }

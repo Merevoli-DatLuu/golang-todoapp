@@ -6,9 +6,11 @@
 ####################################################
 
 
-@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzAzODY0ODcsImlzcyI6Imx1dXRoYW5oZGF0In0.LH8G_dFW94l2hqQIMJBR5U4KIpIVS1w8YsNk4pQGwWI
+@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MzA3NjU2NzAsImlzcyI6Imx1dXRoYW5oZGF0In0.g6ni3vUde6Tkj2JcRQ3mFD6ZMIR7-ybEFgs-ubBMw-Q
 
 @base_url = http://127.0.0.1:8080
+
+@api_url = {{base_url}}/api/v1
 
 ########################
 #    1. User Module    #
@@ -16,12 +18,12 @@
 
 
 ### User Register
-POST {{base_url}}/api/user HTTP/1.1
+POST {{api_url}}/register HTTP/1.1
 content-type: application/json
 
 {
-    "username": "luuthanhdat",
-    "email": "datluu.1702@gmail.com",
+    "username": "luuthanhdat12",
+    "email": "datluu.1702123@gmail.com",
     "password": "dat123!@#",
     "age": 19,
     "Gender": 0
@@ -29,7 +31,7 @@ content-type: application/json
 
 
 ### User Login
-POST {{base_url}}/login HTTP/1.1
+POST {{api_url}}/login HTTP/1.1
 content-type: application/json
 
 {   
@@ -39,27 +41,27 @@ content-type: application/json
 
 
 ### User GetAll
-GET {{base_url}}/api/user HTTP/1.1
+GET {{api_url}}/user HTTP/1.1
 content-type: application/json
-token: {{access_token}}
+Authorization: Bearer {{access_token}}
 
 
 ### User GetOne
-GET {{base_url}}/api/user/1 HTTP/1.1
+GET {{api_url}}/user/1 HTTP/1.1
 content-type: application/json
-token: {{access_token}}
+Authorization: Bearer {{access_token}}
 
 
 ### User Delete
-DELETE {{base_url}}/api/user/5 HTTP/1.1
+DELETE {{api_url}}/user/2 HTTP/1.1
 content-type: application/json
-token: {{access_token}}
+Authorization: Bearer {{access_token}}
 
 
 ### User Update
-PUT {{base_url}}/api/user/3 HTTP/1.1
+PUT {{api_url}}/user/1 HTTP/1.1
 content-type: application/json
-token: {{access_token}}
+Authorization: Bearer {{access_token}}
 
 {
     "age": 20
@@ -67,9 +69,9 @@ token: {{access_token}}
 
 
 ### User Auth
-Get {{base_url}}/api/user/checkauth HTTP/1.1
+Get {{api_url}}/user/check_auth HTTP/1.1
 content-type: application/json
-Authorization: {{access_token}}
+Authorization: Bearer {{access_token}}
 
 
 
@@ -79,9 +81,9 @@ Authorization: {{access_token}}
 
 
 ### Todo Add
-POST {{base_url}}/api/todo HTTP/1.1
+POST {{api_url}}/todo HTTP/1.1
 content-type: application/json
-token: {{access_token}}
+Authorization: Bearer {{access_token}}
 
 {
     "name": "task 1",
@@ -92,21 +94,20 @@ token: {{access_token}}
 
 
 ### Todo GetAll
-GET {{base_url}}/api/todo HTTP/1.1
+GET {{api_url}}/todo HTTP/1.1
 content-type: application/json
-token: {{access_token}}
+Authorization: Bearer {{access_token}}
 
 
 ### Todo GetOne
-GET {{base_url}}/api/todo/1 HTTP/1.1
+GET {{api_url}}/todo/2 HTTP/1.1
 content-type: application/json
-token: {{access_token}}
-
+Authorization: Bearer {{access_token}}
 
 ### Todo Update
-PUT {{base_url}}/api/todo/1 HTTP/1.1
+PUT {{api_url}}/todo/2 HTTP/1.1
 content-type: application/json
-token: {{access_token}}
+Authorization: Bearer {{access_token}}
 
 {
     "name": "task 1"
@@ -114,6 +115,6 @@ token: {{access_token}}
 
 
 ### Todo Delete
-DELETE {{base_url}}/api/todo/1 HTTP/1.1
+DELETE {{api_url}}/todo/1 HTTP/1.1
 content-type: application/json
-token: {{access_token}}
+Authorization: Bearer {{access_token}}

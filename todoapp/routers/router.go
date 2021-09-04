@@ -1,18 +1,58 @@
 package routers
 
 import (
+	"strings"
 	"todoapp/controllers"
+	"todoapp/models"
+	"todoapp/utils"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/context"
 )
 
 func init() {
 	beego.Router("/", &controllers.MainController{})
-	beego.Router("/login", &controllers.UserController{}, "post:Login")
-	beego.Router("/api/user", &controllers.UserController{}, "get:GetAll;post:Post")
-	beego.Router("/api/user/:id", &controllers.UserController{}, "get:GetOne;put:Put;delete:Delete")
-	beego.Router("/api/user/checkauth", &controllers.UserController{}, "*:Auth")
 
-	beego.Router("/api/todo", &controllers.TodoController{}, "get:GetAll;post:Post")
-	beego.Router("/api/todo/:id", &controllers.TodoController{}, "get:GetOne;put:Put;delete:Delete")
+	ns := beego.NewNamespace("/api",
+		beego.NSNamespace("/v1",
+			beego.NSRouter("/login", &controllers.UserController{}, "post:Login"),
+			beego.NSRouter("/register", &controllers.UserController{}, "post:Post"),
+			beego.NSNamespace("/user",
+				beego.NSBefore(auth),
+				beego.NSRouter("/", &controllers.UserController{}, "get:GetAll"),
+				beego.NSRouter("/:id", &controllers.UserController{}, "get:GetOne;put:Put;delete:Delete"),
+				beego.NSRouter("/check_auth", &controllers.UserController{}, "*:Auth"),
+			),
+			beego.NSNamespace("/todo",
+				beego.NSBefore(auth),
+				beego.NSRouter("/", &controllers.TodoController{}, "get:GetAll;post:Post"),
+				beego.NSRouter("/:id", &controllers.TodoController{}, "get:GetOne;put:Put;delete:Delete"),
+			),
+		),
+	)
+
+	beego.AddNamespace(ns)
+}
+
+var auth = func(ctx *context.Context) {
+	token_raw := ctx.Input.Header("Authorization")
+	token_fields := strings.Split(token_raw, " ")
+
+	if len(token_fields) == 2 && token_fields[0] == "Bearer" {
+		token := token_fields[1]
+		et := utils.EasyToken{}
+		validation, err := et.ValidateToken(token)
+
+		if !validation {
+			controllers.RetUnauthorizedResponse(ctx, err.Error())
+		}
+
+		found, _ := models.GetUserByToken(token)
+		if !found {
+			controllers.RetUnauthorizedResponse(ctx, "user is not exist")
+		}
+
+	} else {
+		controllers.RetUnauthorizedResponse(ctx, "Wrong format token")
+	}
 }

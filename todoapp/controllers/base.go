@@ -9,8 +9,8 @@ type BaseController struct {
 }
 
 type Response struct {
-	Status       int         `json:"status"`
-	ErrorCode    int         `json:"error_code"`
-	ErrorMessage string      `json:"error_message"`
-	Data         interface{} `json:"data"`
+	Status    string      `json:"status"`
+	ErrorCode int         `json:"error_code"`
+	Message   string      `json:"message"`
+	Data      interface{} `json:"data"`
 }

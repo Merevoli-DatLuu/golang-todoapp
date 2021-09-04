@@ -274,9 +274,8 @@ func UpdateUserById(m *User, u *User) (err error) {
 	if m.CreatedAt == 0 {
 		m.CreatedAt = u.CreatedAt
 	}
-	if m.UpdatedAt == 0 {
-		m.UpdatedAt = u.UpdatedAt
-	}
+
+	m.UpdatedAt = time.Now().UTC().Unix()
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
 		var num int64

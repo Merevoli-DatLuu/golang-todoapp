@@ -2,19 +2,15 @@ package controllers
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
 	"todoapp/models"
 	"todoapp/utils"
-
-	"github.com/astaxie/beego"
 )
 
 type UserController struct {
-	beego.Controller
+	BaseController
 }
 
 func (c *UserController) URLMapping() {
@@ -30,35 +26,32 @@ func (c *UserController) Post() {
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if errorMessage := utils.CheckNewUserPost(v.Username, v.Password,
 			v.Age, v.Gender, v.Email); errorMessage != "ok" {
-			c.Ctx.ResponseWriter.WriteHeader(403)
-			c.Data["json"] = Response{403, 403, errorMessage, ""}
-			c.ServeJSON()
+			c.RetResponse(&Response{FailStatus, 403, errorMessage, ""}, 403)
 			return
 		}
+
 		if models.CheckUserName(v.Username) {
-			c.Ctx.ResponseWriter.WriteHeader(403)
-			c.Data["json"] = Response{403, 403, "username is already registered", ""}
-			c.ServeJSON()
+			c.RetResponse(&Response{FailStatus, 403, "username is already registered", ""}, 403)
 			return
 		}
+
 		if models.CheckEmail(v.Email) {
-			c.Ctx.ResponseWriter.WriteHeader(403)
-			c.Data["json"] = Response{403, 403, "email is already registered", ""}
-			c.ServeJSON()
+			c.RetResponse(&Response{FailStatus, 403, "email is already registered", ""}, 403)
 			return
 		}
 
 		if user, err := models.AddUser(&v); err == nil {
-			c.Ctx.Output.SetStatus(201)
 			var returnData = &UserSuccessLoginData{user.Token, user.Username}
-			c.Data["json"] = &Response{0, 0, "ok", returnData}
+			c.RetResponse(&Response{SuccessStatus, 0, "register successfully", returnData}, 201)
+			return
 		} else {
-			c.Data["json"] = &Response{1, 1, "user registration failed", err.Error()}
+			c.RetResponse(&Response{FailStatus, 400, err.Error(), ""}, 400)
+			return
 		}
 	} else {
-		c.Data["json"] = &Response{1, 1, "user registration failed", err.Error()}
+		c.RetResponse(&Response{FailStatus, 400, err.Error(), ""}, 400)
+		return
 	}
-	c.ServeJSON()
 }
 
 func (c *UserController) GetAll() {
@@ -69,20 +62,10 @@ func (c *UserController) GetAll() {
 	var limit int = 10
 	var offset int
 
-	token := c.Ctx.Input.Header("token")
-	et := utils.EasyToken{}
-	validation, err := et.ValidateToken(token)
-	if !validation {
-		c.Ctx.ResponseWriter.WriteHeader(401)
-		c.Data["json"] = Response{401, 401, fmt.Sprintf("%s", err), ""}
-		c.ServeJSON()
-		return
-	}
-
 	if v := c.GetString("fields"); v != "" {
 		fields = strings.Split(v, ",")
 	} else {
-		fields = strings.Split("Username,Gender,Age,Email,Token", ",")
+		fields = strings.Split("Id,Username,Gender,Age,Email", ",")
 	}
 	if v, err := c.GetInt("limit"); err == nil {
 		limit = v
@@ -100,8 +83,7 @@ func (c *UserController) GetAll() {
 		for _, cond := range strings.Split(v, ",") {
 			kv := strings.SplitN(cond, ":", 2)
 			if len(kv) != 2 {
-				c.Data["json"] = errors.New("Error: invalid query key/value pair")
-				c.ServeJSON()
+				c.RetResponse(&Response{FailStatus, 400, "invalid query key/value pair", ""}, 400)
 				return
 			}
 			k, v := kv[0], kv[1]
@@ -111,87 +93,63 @@ func (c *UserController) GetAll() {
 
 	l, err := models.GetAllUser(query, fields, sortby, order, offset, limit)
 	if err != nil {
-		c.Data["json"] = err.Error()
+		c.RetResponse(&Response{FailStatus, 400, err.Error(), ""}, 400)
+		return
 	} else {
-		c.Data["json"] = l
+		c.RetResponse(&Response{SuccessStatus, 0, "Get all users successfully", l}, 200)
+		return
 	}
-	c.ServeJSON()
 }
 
 func (c *UserController) GetOne() {
-	token := c.Ctx.Input.Header("token")
 	idStr := c.Ctx.Input.Param(":id")
-	et := utils.EasyToken{}
-	valido, err := et.ValidateToken(token)
-	if !valido {
-		c.Ctx.ResponseWriter.WriteHeader(401)
-		c.Data["json"] = Response{401, 401, fmt.Sprintf("%s", err), ""}
-		c.ServeJSON()
-		return
-	}
 
 	id, _ := strconv.Atoi(idStr)
 	v, err := models.GetUserById(id)
 	if v == nil {
-		c.Data["json"] = err.Error()
+		c.RetResponse(&Response{FailStatus, 400, err.Error(), ""}, 400)
+		return
 	} else {
-		c.Data["json"] = v
+		c.RetResponse(&Response{SuccessStatus, 0, "Get user successfully", v}, 200)
+		return
 	}
-	c.ServeJSON()
-
 }
 
 func (c *UserController) Put() {
-	token := c.Ctx.Input.Header("token")
-	et := utils.EasyToken{}
-	valido, err := et.ValidateToken(token)
-	if !valido {
-		c.Ctx.ResponseWriter.WriteHeader(401)
-		c.Data["json"] = Response{401, 401, fmt.Sprintf("%s", err), ""}
-		c.ServeJSON()
-		return
-	}
-
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.Atoi(idStr)
 	v := models.User{Id: id}
 
 	u, err := models.GetUserById(id)
 	if u == nil {
-		c.Data["json"] = err.Error()
+		c.RetResponse(&Response{FailStatus, 404, err.Error(), ""}, 404)
+		return
 	}
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if err := models.UpdateUserById(&v, u); err == nil {
-			c.Data["json"] = successReturn
+			c.RetResponse(&Response{SuccessStatus, 0, "Update user successfully", ""}, 200)
+			return
 		} else {
-			c.Data["json"] = err.Error()
+			c.RetResponse(&Response{FailStatus, 400, err.Error(), ""}, 400)
+			return
 		}
 	} else {
-		c.Data["json"] = err.Error()
+		c.RetResponse(&Response{FailStatus, 400, err.Error(), ""}, 400)
+		return
 	}
-	c.ServeJSON()
 }
 
 func (c *UserController) Delete() {
-	token := c.Ctx.Input.Header("token")
-	et := utils.EasyToken{}
-	valido, err := et.ValidateToken(token)
-	if !valido {
-		c.Ctx.ResponseWriter.WriteHeader(401)
-		c.Data["json"] = Response{401, 401, fmt.Sprintf("%s", err), ""}
-		c.ServeJSON()
-		return
-	}
-
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.Atoi(idStr)
 	if err := models.DeleteUser(id); err == nil {
-		c.Data["json"] = successReturn
+		c.RetResponse(&Response{SuccessStatus, 0, "Delete user successfully", ""}, 200)
+		return
 	} else {
-		c.Data["json"] = err.Error()
+		c.RetResponse(&Response{FailStatus, 400, err.Error(), ""}, 400)
+		return
 	}
-	c.ServeJSON()
 }
 
 func (c *UserController) Login() {
@@ -203,14 +161,12 @@ func (c *UserController) Login() {
 
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &reqData); err == nil {
 		if errorMessage := utils.CheckUsernamePassword(reqData.Username, reqData.Password); errorMessage != "ok" {
-			c.Ctx.ResponseWriter.WriteHeader(403)
-			c.Data["json"] = Response{403, 403, errorMessage, ""}
-			c.ServeJSON()
+			c.RetResponse(&Response{FailStatus, 403, errorMessage, ""}, 403)
 			return
 		}
 		if ok, user := models.Login(reqData.Username, reqData.Password); ok {
 			et := utils.EasyToken{}
-			validation, err := et.ValidateToken(user.Token)
+			validation, _ := et.ValidateToken(user.Token)
 			if !validation {
 				et = utils.EasyToken{
 					Username: user.Username,
@@ -219,8 +175,7 @@ func (c *UserController) Login() {
 				}
 				token, err = et.GetToken()
 				if token == "" || err != nil {
-					c.Data["json"] = errUserToken
-					c.ServeJSON()
+					c.RetResponse(errUserToken, 400)
 					return
 				} else {
 					models.UpdateUserToken(user, token)
@@ -230,29 +185,20 @@ func (c *UserController) Login() {
 			}
 
 			var returnData = &UserSuccessLoginData{token, user.Username}
-			c.Data["json"] = &Response{0, 0, "ok", returnData}
+			c.RetResponse(&Response{SuccessStatus, 0, "login successfully", returnData}, 200)
+			return
 		} else {
-			c.Data["json"] = &errNoUserOrPass
+			c.RetResponse(errNoUserOrPass, 200)
+			return
 		}
 	} else {
-		c.Data["json"] = &errNoUserOrPass
+		c.RetResponse(errNoUserOrPass, 200)
+		return
 	}
-	c.ServeJSON()
 }
 
 func (c *UserController) Auth() {
-	et := utils.EasyToken{}
-	token := strings.TrimSpace(c.Ctx.Request.Header.Get("Authorization"))
-	validation, err := et.ValidateToken(token)
-	if !validation {
-		c.Ctx.ResponseWriter.WriteHeader(401)
-		c.Data["json"] = Response{401, 401, fmt.Sprintf("%s", err), ""}
-		c.ServeJSON()
-		return
-	}
-
-	c.Data["json"] = Response{0, 0, "is login", ""}
-	c.ServeJSON()
+	c.RetResponse(&Response{SuccessStatus, 0, "token valid", ""}, 200)
 }
 
 func (u *UserController) Logout() {
